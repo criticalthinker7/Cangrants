@@ -6,6 +6,8 @@
 
 AI-powered grant discovery and tracking for Canadian artists and producers — built by BetterHalf Films.
 
+Live demo: https://cangrants-betterhalf.vercel.app/
+
 ## Run locally
 
 **Prerequisites:** Node.js 20+
