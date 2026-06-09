@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 import canGrantsLogo from "../assets/logo.svg";
+import { isSupabaseConfigured, supabase } from "./lib/supabase";
 
 const CA_PROVINCES = [
   "Alberta","British Columbia","Manitoba","New Brunswick",
@@ -88,11 +90,30 @@ interface Grant {
 }
 
 interface UserInfo {
+  id?: string;
   name: string;
   email: string;
   province?: string;
   discipline?: string;
   career?: string;
+}
+
+const getRedirectUrl = () => window.location.origin;
+
+function toUserInfo(user: SupabaseUser): UserInfo {
+  const metadata = user.user_metadata ?? {};
+  return {
+    id: user.id,
+    name:
+      metadata.name ||
+      metadata.full_name ||
+      user.email?.split("@")[0] ||
+      "CanGrants Member",
+    email: user.email || "",
+    province: metadata.province,
+    discipline: metadata.discipline,
+    career: metadata.career,
+  };
 }
 
 function CanGrantsLogoImg({ size = "md" }: { size?: "lg" | "md" | "sm" }) {
@@ -108,6 +129,8 @@ function LandingPage({ onAuth }: { onAuth: (user: UserInfo) => void }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loginForm, setLoginForm] = useState({ email:"", password:"" });
   const [loginErr, setLoginErr] = useState("");
+  const [authMessage, setAuthMessage] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
   const [users, setUsers] = useState(() => {
     const demo = { email:"demo@betterhalffilms.com", password:"demo123", name:"Demo Artist", province:"Ontario", discipline:"Film" };
     try {
@@ -121,7 +144,7 @@ function LandingPage({ onAuth }: { onAuth: (user: UserInfo) => void }) {
     const e: Record<string, string> = {};
     if (!form.name.trim()) e.name = "Full name is required";
     if (!form.email.includes("@")) e.email = "Valid email required";
-    if (form.password.length < 6) e.password = "Min 6 characters";
+    if (!isSupabaseConfigured && form.password.length < 6) e.password = "Min 6 characters";
     if (!form.address.trim()) e.address = "Street address required";
     if (!form.city.trim()) e.city = "City required";
     if (!form.province) e.province = "Select a province or territory";
@@ -130,9 +153,37 @@ function LandingPage({ onAuth }: { onAuth: (user: UserInfo) => void }) {
     return e;
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
+
+    if (isSupabaseConfigured && supabase) {
+      setAuthLoading(true);
+      setLoginErr("");
+      setAuthMessage("");
+      const { error } = await supabase.auth.signInWithOtp({
+        email: form.email,
+        options: {
+          emailRedirectTo: getRedirectUrl(),
+          data: {
+            name: form.name,
+            province: form.province,
+            discipline: form.discipline,
+            career: form.career,
+            city: form.city,
+            country: "Canada",
+          },
+        },
+      });
+      setAuthLoading(false);
+      if (error) {
+        setLoginErr(error.message);
+        return;
+      }
+      setAuthMessage("Check your email for a CanGrants magic sign-in link.");
+      return;
+    }
+
     const newUser = { ...form };
     setUsers(p => {
       const next = [...p, newUser];
@@ -142,10 +193,47 @@ function LandingPage({ onAuth }: { onAuth: (user: UserInfo) => void }) {
     onAuth({ name: form.name, email: form.email, province: form.province, discipline: form.discipline, career: form.career });
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    if (isSupabaseConfigured && supabase) {
+      if (!loginForm.email.includes("@")) {
+        setLoginErr("Enter a valid email address.");
+        return;
+      }
+      setAuthLoading(true);
+      setLoginErr("");
+      setAuthMessage("");
+      const { error } = await supabase.auth.signInWithOtp({
+        email: loginForm.email,
+        options: { emailRedirectTo: getRedirectUrl() },
+      });
+      setAuthLoading(false);
+      if (error) {
+        setLoginErr(error.message);
+        return;
+      }
+      setAuthMessage("Check your email for a CanGrants magic sign-in link.");
+      return;
+    }
+
     const u = users.find(u => u.email === loginForm.email && u.password === loginForm.password);
     if (!u) { setLoginErr("Invalid email or password."); return; }
     onAuth({ name: u.name, email: u.email, province: u.province });
+  };
+
+  const handleGoogleLogin = async () => {
+    if (!isSupabaseConfigured || !supabase) {
+      setLoginErr("Add Supabase environment variables to enable Google login.");
+      return;
+    }
+    setAuthLoading(true);
+    setLoginErr("");
+    setAuthMessage("");
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: getRedirectUrl() },
+    });
+    setAuthLoading(false);
+    if (error) setLoginErr(error.message);
   };
 
   const inp = (field: string, label: string, type="text", opts: string[] | null = null) => {
@@ -255,29 +343,41 @@ function LandingPage({ onAuth }: { onAuth: (user: UserInfo) => void }) {
               <button onClick={() => setMode("welcome")} style={{ background:"none", border:"none", color:"#6A9C6A", cursor:"pointer", fontSize:13, marginBottom:24, padding:0, fontFamily:"'DM Sans',sans-serif" }}>{"\u2190"} Back</button>
               <div style={{ width:40, height:2, background:"#C8A84B", marginBottom:20 }}/>
               <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:36, fontWeight:700, margin:"0 0 6px" }}>Sign In</h2>
-              <p style={{ fontSize:14, color:"#6A8C6A", marginBottom:30 }}>Welcome back. Access your CanGrants dashboard.</p>
+              <p style={{ fontSize:14, color:"#6A8C6A", marginBottom:30 }}>
+                {isSupabaseConfigured ? "Use a magic link or Google to access your CanGrants dashboard." : "Welcome back. Access your CanGrants dashboard."}
+              </p>
               <div style={{ marginBottom:14 }}>
                 <label style={{ display:"block", fontSize:11, fontWeight:600, color:"#A8C5A0", letterSpacing:"1px", textTransform:"uppercase", marginBottom:5 }}>Email Address</label>
                 <input type="email" value={loginForm.email} onChange={e => setLoginForm(p=>({...p,email:e.target.value}))} placeholder="your@email.com"
                   style={{ width:"100%", padding:"12px 14px", background:"rgba(255,255,255,0.06)", border:"1px solid rgba(200,168,75,0.3)", borderRadius:8, color:"#F4EFE6", fontSize:14, fontFamily:"'DM Sans',sans-serif", outline:"none", boxSizing:"border-box" }}/>
               </div>
-              <div style={{ marginBottom:22 }}>
-                <label style={{ display:"block", fontSize:11, fontWeight:600, color:"#A8C5A0", letterSpacing:"1px", textTransform:"uppercase", marginBottom:5 }}>Password</label>
-                <input type="password" value={loginForm.password} onChange={e => setLoginForm(p=>({...p,password:e.target.value}))} placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
-                  onKeyDown={e => e.key==="Enter" && handleLogin()}
-                  style={{ width:"100%", padding:"12px 14px", background:"rgba(255,255,255,0.06)", border:"1px solid rgba(200,168,75,0.3)", borderRadius:8, color:"#F4EFE6", fontSize:14, fontFamily:"'DM Sans',sans-serif", outline:"none", boxSizing:"border-box" }}/>
-              </div>
+              {!isSupabaseConfigured && (
+                <div style={{ marginBottom:22 }}>
+                  <label style={{ display:"block", fontSize:11, fontWeight:600, color:"#A8C5A0", letterSpacing:"1px", textTransform:"uppercase", marginBottom:5 }}>Password</label>
+                  <input type="password" value={loginForm.password} onChange={e => setLoginForm(p=>({...p,password:e.target.value}))} placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
+                    onKeyDown={e => e.key==="Enter" && handleLogin()}
+                    style={{ width:"100%", padding:"12px 14px", background:"rgba(255,255,255,0.06)", border:"1px solid rgba(200,168,75,0.3)", borderRadius:8, color:"#F4EFE6", fontSize:14, fontFamily:"'DM Sans',sans-serif", outline:"none", boxSizing:"border-box" }}/>
+                </div>
+              )}
               {loginErr && <div style={{ background:"rgba(192,57,43,0.15)", border:"1px solid rgba(192,57,43,0.4)", borderRadius:8, padding:"10px 14px", fontSize:13, color:"#E74C3C", marginBottom:16 }}>{loginErr}</div>}
-              <button onClick={handleLogin} style={{ width:"100%", padding:"14px", borderRadius:10, border:"none", background:"#C8A84B", color:"#0B2215", fontSize:15, fontWeight:700, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", marginBottom:14 }}>
-                Sign In {"\u2192"}
+              {authMessage && <div style={{ background:"rgba(46,125,70,0.15)", border:"1px solid rgba(46,125,70,0.35)", borderRadius:8, padding:"10px 14px", fontSize:13, color:"#A8C5A0", marginBottom:16 }}>{authMessage}</div>}
+              <button onClick={handleLogin} disabled={authLoading} style={{ width:"100%", padding:"14px", borderRadius:10, border:"none", background:authLoading?"#8B7935":"#C8A84B", color:"#0B2215", fontSize:15, fontWeight:700, cursor:authLoading?"not-allowed":"pointer", fontFamily:"'DM Sans',sans-serif", marginBottom:14 }}>
+                {authLoading ? "Sending..." : isSupabaseConfigured ? "Email Magic Link" : "Sign In"} {"\u2192"}
               </button>
+              {isSupabaseConfigured && (
+                <button onClick={handleGoogleLogin} disabled={authLoading} style={{ width:"100%", padding:"13px", borderRadius:10, border:"1px solid rgba(200,168,75,0.35)", background:"transparent", color:"#C8A84B", fontSize:14, fontWeight:600, cursor:authLoading?"not-allowed":"pointer", fontFamily:"'DM Sans',sans-serif", marginBottom:14 }}>
+                  Continue with Google
+                </button>
+              )}
               <p style={{ textAlign:"center", fontSize:13, color:"#666" }}>
                 Don't have an account?{" "}
                 <button onClick={() => {setMode("register"); setErrors({});}} style={{ background:"none", border:"none", color:"#C8A84B", cursor:"pointer", fontSize:13, fontFamily:"'DM Sans',sans-serif", fontWeight:600 }}>Create one</button>
               </p>
-              <div style={{ marginTop:20, padding:"12px", background:"rgba(200,168,75,0.06)", borderRadius:8, fontSize:12, color:"#888", textAlign:"center" }}>
-                Demo: demo@betterhalffilms.com \u00b7 demo123
-              </div>
+              {!isSupabaseConfigured && (
+                <div style={{ marginTop:20, padding:"12px", background:"rgba(200,168,75,0.06)", borderRadius:8, fontSize:12, color:"#888", textAlign:"center" }}>
+                  Demo: demo@betterhalffilms.com \u00b7 demo123
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -288,7 +388,9 @@ function LandingPage({ onAuth }: { onAuth: (user: UserInfo) => void }) {
               <button onClick={() => setMode("welcome")} style={{ background:"none", border:"none", color:"#6A9C6A", cursor:"pointer", fontSize:13, marginBottom:24, padding:0, fontFamily:"'DM Sans',sans-serif" }}>{"\u2190"} Back</button>
               <div style={{ width:40, height:2, background:"#C8A84B", marginBottom:20 }}/>
               <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:36, fontWeight:700, margin:"0 0 6px" }}>Create Your Account</h2>
-              <p style={{ fontSize:14, color:"#6A8C6A", marginBottom:8 }}>Join CanGrants — Canada's AI-powered grant platform for artists and producers.</p>
+              <p style={{ fontSize:14, color:"#6A8C6A", marginBottom:8 }}>
+                {isSupabaseConfigured ? "Join CanGrants with a secure magic link — no password required." : "Join CanGrants — Canada's AI-powered grant platform for artists and producers."}
+              </p>
               <div style={{ background:"rgba(200,168,75,0.08)", border:"1px solid rgba(200,168,75,0.2)", borderRadius:8, padding:"10px 14px", fontSize:12, color:"#B8A055", marginBottom:26 }}>
                 <strong>Canadian residents only.</strong> A valid Canadian postal code is required to create an account.
               </div>
@@ -296,7 +398,7 @@ function LandingPage({ onAuth }: { onAuth: (user: UserInfo) => void }) {
               <div style={{ fontSize:11, fontWeight:700, color:"#C8A84B", letterSpacing:"2px", textTransform:"uppercase", marginBottom:14, paddingBottom:8, borderBottom:"1px solid rgba(200,168,75,0.15)" }}>Personal Info</div>
               {inp("name","Full Name")}
               {inp("email","Email Address","email")}
-              {inp("password","Password","password")}
+              {!isSupabaseConfigured && inp("password","Password","password")}
 
               <div style={{ fontSize:11, fontWeight:700, color:"#C8A84B", letterSpacing:"2px", textTransform:"uppercase", margin:"20px 0 14px", paddingBottom:8, borderBottom:"1px solid rgba(200,168,75,0.15)" }}>Canadian Address</div>
               {inp("address","Street Address")}
@@ -310,9 +412,16 @@ function LandingPage({ onAuth }: { onAuth: (user: UserInfo) => void }) {
               {inp("discipline","Primary Discipline","text", ["Film","Documentary","Animation","Television","Digital Media","Visual Arts","Music","Writing","Interdisciplinary","Other"])}
               {inp("career","Career Stage","text", ["Emerging (0\u20135 years)","Mid-Career (5\u201315 years)","Established (15+ years)","Student","Organization / Company"])}
 
-              <button onClick={handleRegister} style={{ width:"100%", padding:"15px", borderRadius:10, border:"none", background:"#C8A84B", color:"#0B2215", fontSize:16, fontWeight:700, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", marginTop:10, marginBottom:12, letterSpacing:"0.5px" }}>
-                Create Account & Explore Grants {"\u2192"}
+              {loginErr && <div style={{ background:"rgba(192,57,43,0.15)", border:"1px solid rgba(192,57,43,0.4)", borderRadius:8, padding:"10px 14px", fontSize:13, color:"#E74C3C", marginBottom:16 }}>{loginErr}</div>}
+              {authMessage && <div style={{ background:"rgba(46,125,70,0.15)", border:"1px solid rgba(46,125,70,0.35)", borderRadius:8, padding:"10px 14px", fontSize:13, color:"#A8C5A0", marginBottom:16 }}>{authMessage}</div>}
+              <button onClick={handleRegister} disabled={authLoading} style={{ width:"100%", padding:"15px", borderRadius:10, border:"none", background:authLoading?"#8B7935":"#C8A84B", color:"#0B2215", fontSize:16, fontWeight:700, cursor:authLoading?"not-allowed":"pointer", fontFamily:"'DM Sans',sans-serif", marginTop:10, marginBottom:12, letterSpacing:"0.5px" }}>
+                {authLoading ? "Sending..." : isSupabaseConfigured ? "Send Magic Link & Create Profile" : "Create Account & Explore Grants"} {"\u2192"}
               </button>
+              {isSupabaseConfigured && (
+                <button onClick={handleGoogleLogin} disabled={authLoading} style={{ width:"100%", padding:"13px", borderRadius:10, border:"1px solid rgba(200,168,75,0.35)", background:"transparent", color:"#C8A84B", fontSize:14, fontWeight:600, cursor:authLoading?"not-allowed":"pointer", fontFamily:"'DM Sans',sans-serif", marginBottom:12 }}>
+                  Continue with Google Instead
+                </button>
+              )}
               <p style={{ textAlign:"center", fontSize:13, color:"#666" }}>
                 Already have an account?{" "}
                 <button onClick={() => setMode("login")} style={{ background:"none", border:"none", color:"#C8A84B", cursor:"pointer", fontSize:13, fontFamily:"'DM Sans',sans-serif", fontWeight:600 }}>Sign in</button>
@@ -683,18 +792,53 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
 
 function App() {
   const [user, setUser] = useState<UserInfo | null>(() => {
+    if (isSupabaseConfigured) return null;
     try { return JSON.parse(localStorage.getItem("cg_user") || "null"); } catch { return null; }
   });
+  const [checkingSession, setCheckingSession] = useState(isSupabaseConfigured);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return;
+
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data.session?.user ? toUserInfo(data.session.user) : null);
+      setCheckingSession(false);
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextUser = session?.user ? toUserInfo(session.user) : null;
+      setUser(nextUser);
+      if (nextUser) {
+        localStorage.setItem("cg_user", JSON.stringify(nextUser));
+      } else {
+        localStorage.removeItem("cg_user");
+      }
+      setCheckingSession(false);
+    });
+
+    return () => authListener.subscription.unsubscribe();
+  }, []);
 
   const handleAuth = (u: UserInfo) => {
     setUser(u);
     localStorage.setItem("cg_user", JSON.stringify(u));
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (isSupabaseConfigured && supabase) {
+      await supabase.auth.signOut();
+    }
     setUser(null);
     localStorage.removeItem("cg_user");
   };
+
+  if (checkingSession) {
+    return (
+      <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"#030E07", color:"#C8A84B", fontFamily:"'DM Sans',sans-serif" }}>
+        Loading CanGrants...
+      </div>
+    );
+  }
 
   if (!user) {
     return <LandingPage onAuth={handleAuth} />;
