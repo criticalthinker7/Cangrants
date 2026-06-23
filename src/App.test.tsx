@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, expect, test } from 'vitest';
+import { beforeEach, expect, it, test } from 'vitest';
 import App from './App';
 
-const signInDemoUser = async () => {
+const signIn = async () => {
   const user = userEvent.setup();
 
   render(<App />);
@@ -32,7 +32,7 @@ beforeEach(() => {
 });
 
 test('shows BetterHalf Labs contact links from the Contact tab', async () => {
-  const user = await signInDemoUser();
+  const user = await signIn();
 
   await user.click(screen.getByRole('button', { name: /^contact$/i }));
 
@@ -49,4 +49,9 @@ test('shows BetterHalf Labs contact links from the Contact tab', async () => {
     'href',
     'https://x.com/CdnArtGrants',
   );
+});
+
+it('shows a current dataset label on the Discover page', async () => {
+  await signIn();
+  expect(screen.getByText(/Updated 2026/i)).toBeInTheDocument();
 });

@@ -11,7 +11,8 @@ export interface ChatContext {
   userDiscipline: string;
 }
 
-const GRANT_SUMMARY = `CanGrants lists 48 Canadian and international arts grants including Telefilm Talent to Watch, Canada Council Explore and Create, TAC Media Artists, CMF, Sundance, TIFF Talent Lab, Berlinale Talents, and Ontario Creates programs.`;
+const GRANT_SUMMARY =
+  'CanGrants lists Canadian and international arts grants including Telefilm, Canada Council, Toronto Arts Council, CMF, Sundance, TIFF, Berlinale, and Ontario Creates programs. Official deadlines should be checked on the funder website before applying.';
 
 function fallbackReply(
   messages: ChatMessage[],
