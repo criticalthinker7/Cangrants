@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, expect, it, test } from 'vitest';
+import { afterEach, beforeEach, expect, it, test } from 'vitest';
 import App from './App';
 import { GRANTS } from './data/grants';
 
@@ -8,6 +8,13 @@ const originalGrantDeadlines = GRANTS.map((grant) => ({
   id: grant.id,
   close: grant.close,
 }));
+
+const restoreGrantDeadlines = () => {
+  originalGrantDeadlines.forEach(({ id, close }) => {
+    const grant = GRANTS.find((candidate) => candidate.id === id);
+    if (grant) grant.close = close;
+  });
+};
 
 const signIn = async () => {
   const user = userEvent.setup();
@@ -35,10 +42,11 @@ const signIn = async () => {
 
 beforeEach(() => {
   localStorage.clear();
-  originalGrantDeadlines.forEach(({ id, close }) => {
-    const grant = GRANTS.find((candidate) => candidate.id === id);
-    if (grant) grant.close = close;
-  });
+  restoreGrantDeadlines();
+});
+
+afterEach(() => {
+  restoreGrantDeadlines();
 });
 
 test('shows BetterHalf Labs contact links from the Contact tab', async () => {
@@ -96,4 +104,22 @@ it('points artists to the funder site when a deadline is not parseable', async (
   );
 
   expect(screen.getByText('Check funder site')).toBeInTheDocument();
+});
+
+it('excludes explicitly closed grants from the urgent deadline filter', async () => {
+  const grant = GRANTS.find(
+    (candidate) => candidate.name === 'Sundance Feature Film Program',
+  );
+  expect(grant).toBeDefined();
+  grant!.close = 'Closed';
+
+  const user = await signIn();
+  await user.type(
+    screen.getByPlaceholderText(/Search grants/i),
+    'Sundance Feature Film Program',
+  );
+  await user.selectOptions(screen.getByDisplayValue('Deadline: All'), 'urgent');
+
+  expect(screen.queryByText('Sundance Feature Film Program')).not.toBeInTheDocument();
+  expect(screen.getByText(/Showing 0 of 48 grants/i)).toBeInTheDocument();
 });

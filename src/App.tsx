@@ -324,7 +324,7 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
     const matchTag = !filters.tag || g.tags.includes(filters.tag);
     const matchDead = !filters.deadline || (() => {
       if (filters.deadline==="rolling") return g.close==="Rolling";
-      if (filters.deadline==="urgent") return getDeadlineStatus(g.close).days<=14;
+      if (filters.deadline==="urgent") { const d=getDeadlineStatus(g.close); return d.days>=0&&d.days<=14; }
       if (filters.deadline==="month") { const d=getDeadlineStatus(g.close); return d.days>14&&d.days<=45; }
       return true;
     })();
