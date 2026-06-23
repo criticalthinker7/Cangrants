@@ -29,7 +29,9 @@ const isValidMessages = (messages: unknown): messages is Array<{ role: "user" | 
 
 const app = express();
 app.disable("x-powered-by");
-app.set("trust proxy", 1);
+if (process.env.TRUST_PROXY === "1") {
+  app.set("trust proxy", 1);
+}
 app.use(
   helmet({
     contentSecurityPolicy: false,
