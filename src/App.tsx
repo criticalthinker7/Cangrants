@@ -12,12 +12,19 @@ const CA_PROVINCES = [
 
 const today = new Date();
 const getDeadlineStatus = (close: string) => {
-  if (close === "Rolling") return { label: "Rolling", color: "#5A9E6A", days: Infinity };
-  const d = new Date(close), diff = Math.ceil((d.getTime() - today.getTime()) / 86400000);
-  if (diff < 0) return { label: "Closed", color: "#999", days: diff };
-  if (diff <= 14) return { label: `${diff}d left`, color: "#C0392B", days: diff };
-  if (diff <= 45) return { label: `${diff}d left`, color: "#E67E22", days: diff };
-  return { label: `${diff}d left`, color: "#27AE60", days: diff };
+  if (close === 'Rolling') return { label: 'Rolling', color: '#5A9E6A', days: Infinity };
+  if (close === 'Closed') return { label: 'Closed', color: '#999', days: -Infinity };
+
+  const d = new Date(close);
+  if (Number.isNaN(d.getTime())) {
+    return { label: 'Check funder site', color: '#8B6914', days: Infinity };
+  }
+
+  const diff = Math.ceil((d.getTime() - today.getTime()) / 86400000);
+  if (diff < 0) return { label: 'Closed', color: '#999', days: diff };
+  if (diff <= 14) return { label: `${diff}d left`, color: '#C0392B', days: diff };
+  if (diff <= 45) return { label: `${diff}d left`, color: '#E67E22', days: diff };
+  return { label: `${diff}d left`, color: '#27AE60', days: diff };
 };
 const validatePostal = (v: string) => /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(v.trim());
 
