@@ -4,7 +4,7 @@
 
 # CanGrants
 
-AI-powered grant discovery and tracking for Canadian artists and producers — built by BetterHalf Films.
+AI-powered grant discovery and tracking for Canadian artists and producers — built by BetterHalf Labs.
 
 Live demo: https://cangrants-betterhalf.vercel.app/
 
@@ -17,7 +17,7 @@ Live demo: https://cangrants-betterhalf.vercel.app/
 3. Start the app: `npm run dev`
 4. Open http://localhost:3000
 
-**Demo login:** `demo@betterhalffilms.com` / `demo123`
+**Demo login:** `demo@betterhalflabs.com` / `demo123`
 
 ## Scripts
 

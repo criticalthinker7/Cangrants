@@ -1,6 +1,15 @@
 import { useState, useRef, useEffect } from "react";
 import canGrantsLogo from "../assets/logo.svg";
 
+const COMPANY_NAME = "BetterHalf Labs";
+const COMPANY_WEBSITE = "https://betterhalflabs.com";
+const SOCIAL_LINKS = [
+  { label: "Instagram", url: "https://www.instagram.com/betterhalflabs/" },
+  { label: "LinkedIn", url: "https://www.linkedin.com/company/canadianartgrants" },
+  { label: "X / Twitter", url: "https://x.com/CdnArtGrants" },
+] as const;
+const GRANTS_LAST_REVIEWED = "June 2026";
+
 const CA_PROVINCES = [
   "Alberta","British Columbia","Manitoba","New Brunswick",
   "Newfoundland and Labrador","Northwest Territories","Nova Scotia",
@@ -98,7 +107,7 @@ interface UserInfo {
 function CanGrantsLogoImg({ size = "md" }: { size?: "lg" | "md" | "sm" }) {
   const dim = size === "lg" ? 80 : size === "sm" ? 40 : 55;
   return (
-    <img src={canGrantsLogo} alt="CanGrants powered by BetterHalf Films" style={{ width:dim, height:dim, borderRadius:"50%", objectFit:"cover" }} />
+    <img src={canGrantsLogo} alt="CanGrants powered by BetterHalf Labs" style={{ width:dim, height:dim, borderRadius:"50%", objectFit:"cover" }} />
   );
 }
 
@@ -109,7 +118,7 @@ function LandingPage({ onAuth }: { onAuth: (user: UserInfo) => void }) {
   const [loginForm, setLoginForm] = useState({ email:"", password:"" });
   const [loginErr, setLoginErr] = useState("");
   const [users, setUsers] = useState(() => {
-    const demo = { email:"demo@betterhalffilms.com", password:"demo123", name:"Demo Artist", province:"Ontario", discipline:"Film" };
+    const demo = { email:"demo@betterhalflabs.com", password:"demo123", name:"Demo Artist", province:"Ontario", discipline:"Film" };
     try {
       const stored = JSON.parse(localStorage.getItem("cg_users") || "[]");
       return stored.some((u: { email: string }) => u.email === demo.email) ? stored : [demo, ...stored];
@@ -276,7 +285,7 @@ function LandingPage({ onAuth }: { onAuth: (user: UserInfo) => void }) {
                 <button onClick={() => {setMode("register"); setErrors({});}} style={{ background:"none", border:"none", color:"#C8A84B", cursor:"pointer", fontSize:13, fontFamily:"'DM Sans',sans-serif", fontWeight:600 }}>Create one</button>
               </p>
               <div style={{ marginTop:20, padding:"12px", background:"rgba(200,168,75,0.06)", borderRadius:8, fontSize:12, color:"#888", textAlign:"center" }}>
-                Demo: demo@betterhalffilms.com \u00b7 demo123
+                Demo: demo@betterhalflabs.com \u00b7 demo123
               </div>
             </div>
           </div>
@@ -326,7 +335,7 @@ function LandingPage({ onAuth }: { onAuth: (user: UserInfo) => void }) {
         <CanGrantsLogoImg size="sm"/>
         <div style={{ fontSize:12, color:"#444", textAlign:"right" }}>
           <div style={{ color:"#C8A84B", fontWeight:600, fontSize:13 }}>CanGrants</div>
-          <div>{"\u00A9"} 2026 BetterHalf Films {"\u00b7"} Toronto, Canada {"\u00b7"} betterhalffilms.com</div>
+          <div>{"\u00A9"} 2026 {COMPANY_NAME} {"\u00b7"} Toronto, Canada {"\u00b7"} betterhalflabs.com</div>
           <div style={{ marginTop:3 }}>Proudly built for Canadian artists & producers</div>
         </div>
       </div>
@@ -417,6 +426,8 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
 
   const savedGrants = GRANTS.filter(g=>saved.has(g.id));
   const appGrants = applications.map(a=>({...a,grant:GRANTS.find(g=>g.id===a.id)!}));
+  const closedDeadlines = GRANTS.filter((g) => getDeadlineStatus(g.close).days < 0).length;
+  const activeDeadlines = GRANTS.filter((g) => getDeadlineStatus(g.close).days >= 0).length;
   const statusColors: Record<string,string> = {"Not Started":"#8B6914","In Progress":"#1A6BC4","Submitted":"#1E7A3E"};
   const statusBg: Record<string,string> = {"Not Started":"#FEF3C7","In Progress":"#DBEAFE","Submitted":"#D1FAE5"};
 
@@ -424,21 +435,21 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
     <div style={{ fontFamily:"'DM Sans',sans-serif", background:"#F4EFE6", minHeight:"100vh", color:"#1A1208" }}>
       <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=Barlow:wght@700;800&display=swap" rel="stylesheet"/>
 
-      <header style={{ background:"#0B2215", color:"#F4EFE6", padding:"0 24px", display:"flex", alignItems:"center", justifyContent:"space-between", height:62, position:"sticky", top:0, zIndex:100, boxShadow:"0 2px 20px rgba(0,0,0,0.3)" }}>
+      <header style={{ background:"linear-gradient(90deg, #E8F8EF 0%, #EAF2FF 100%)", color:"#14311E", padding:"0 24px", display:"flex", alignItems:"center", justifyContent:"space-between", height:68, position:"sticky", top:0, zIndex:100, boxShadow:"0 2px 16px rgba(16,52,92,0.12)", borderBottom:"1px solid #D0E3F5" }}>
         <div style={{ display:"flex", alignItems:"center", gap:18 }}>
           <CanGrantsLogoImg size="sm" />
-          <div style={{ width:1, height:28, background:"rgba(200,168,75,0.3)" }}/>
-          <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:22, fontWeight:700, letterSpacing:"-0.5px", color:"#C8A84B" }}>CanGrants</span>
+          <div style={{ width:1, height:28, background:"rgba(21,94,117,0.24)" }}/>
+          <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:24, fontWeight:700, letterSpacing:"-0.5px", color:"#1F6E57" }}>CanGrants</span>
         </div>
         <div style={{ display:"flex", gap:4, alignItems:"center" }}>
           <nav style={{ display:"flex", gap:3 }}>
-            {[{id:"discover",label:"Discover"},{id:"saved",label:`Saved (${saved.size})`},{id:"applications",label:"My Applications"},{id:"assistant",label:"AI Assistant"}].map(tab => (
-              <button key={tab.id} onClick={()=>setActiveTab(tab.id)} style={{ background:activeTab===tab.id?"#C8A84B":"transparent", color:activeTab===tab.id?"#0B2215":"#A8C5A0", border:"none", borderRadius:6, padding:"7px 13px", fontSize:12, fontWeight:500, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>{tab.label}</button>
+            {[{id:"discover",label:"Discover"},{id:"saved",label:`Saved (${saved.size})`},{id:"applications",label:"My Applications"},{id:"assistant",label:"AI Assistant"},{id:"contact",label:"Contact"}].map(tab => (
+              <button key={tab.id} onClick={()=>setActiveTab(tab.id)} style={{ background:activeTab===tab.id?"#2F7D5C":"transparent", color:activeTab===tab.id?"#FFFFFF":"#215E91", border:"none", borderRadius:8, padding:"9px 14px", fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>{tab.label}</button>
             ))}
           </nav>
-          <div style={{ width:1, height:24, background:"rgba(200,168,75,0.2)", margin:"0 8px" }}/>
-          <div style={{ fontSize:12, color:"#6A9C6A", marginRight:8 }}>{user.name.split(" ")[0]}</div>
-          <button onClick={onLogout} style={{ padding:"6px 12px", borderRadius:6, border:"1px solid rgba(200,168,75,0.3)", background:"transparent", color:"#C8A84B", fontSize:11, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>Sign Out</button>
+          <div style={{ width:1, height:24, background:"rgba(33,94,145,0.2)", margin:"0 8px" }}/>
+          <div style={{ fontSize:14, color:"#356F57", marginRight:8, fontWeight:600 }}>{user.name.split(" ")[0]}</div>
+          <button onClick={onLogout} style={{ padding:"7px 13px", borderRadius:7, border:"1px solid rgba(33,94,145,0.35)", background:"transparent", color:"#215E91", fontSize:12, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", fontWeight:600 }}>Sign Out</button>
         </div>
       </header>
 
@@ -449,7 +460,7 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
             <div style={{ marginBottom:28, display:"flex", gap:16, flexWrap:"wrap", alignItems:"center", justifyContent:"space-between" }}>
               <div>
                 <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:700, margin:"0 0 4px", color:"#0B2215" }}>Grant Discovery</h1>
-                <p style={{ margin:0, color:"#5A6B5A", fontSize:14 }}>{GRANTS.length} opportunities \u00b7 Canadian &amp; International \u00b7 Updated 2026</p>
+                <p style={{ margin:0, color:"#5A6B5A", fontSize:14 }}>{GRANTS.length} opportunities \u00b7 Canadian &amp; International \u00b7 Last reviewed {GRANTS_LAST_REVIEWED}</p>
               </div>
               <div style={{ display:"flex", gap:12 }}>
                 {[{label:"Total",value:GRANTS.length,color:"#C8A84B"},{label:"Canadian",value:GRANTS.filter(g=>g.location==="Canada").length,color:"#2D7D46"},{label:"International",value:GRANTS.filter(g=>g.location==="International").length,color:"#1A5FA8"}].map(s=>(
@@ -459,6 +470,9 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
                   </div>
                 ))}
               </div>
+            </div>
+            <div style={{ background:"#EAF6F0", border:"1px solid #CAE3D5", borderRadius:12, padding:"12px 16px", marginBottom:18, fontSize:13, color:"#2C5A43", lineHeight:1.5 }}>
+              <strong>Deadline freshness check:</strong> {activeDeadlines} programs are currently open/rolling and {closedDeadlines} have passed deadlines in this dataset. Always confirm dates on the official grant page before applying.
             </div>
             <div style={{ background:"#fff", borderRadius:14, padding:20, marginBottom:24, boxShadow:"0 2px 12px rgba(0,0,0,0.06)", border:"1px solid #E8E0D0" }}>
               <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search grants, organizations, disciplines, tags..." style={{ width:"100%", padding:"12px 16px", borderRadius:8, border:"1.5px solid #D5CBB8", fontSize:14, fontFamily:"'DM Sans',sans-serif", background:"#FAFAF7", outline:"none", boxSizing:"border-box", marginBottom:14, color:"#1A1208" }}/>
@@ -620,13 +634,52 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
             <p style={{ textAlign:"center", fontSize:12, color:"#aaa", marginTop:12 }}>Powered by Gemini AI \u00b7 Tailored for Canadian artists & producers</p>
           </div>
         )}
+
+        {activeTab==="contact" && (
+          <div style={{ maxWidth:900, margin:"0 auto" }}>
+            <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:34, fontWeight:700, marginBottom:8, color:"#0B2215" }}>Contact & Company</h1>
+            <p style={{ color:"#5A6B5A", fontSize:15, margin:"0 0 24px" }}>
+              Reach out to the team and follow official CanGrants updates.
+            </p>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(280px, 1fr))", gap:16 }}>
+              <section style={{ background:"#fff", borderRadius:14, padding:"20px 22px", border:"1px solid #DCEBDD", boxShadow:"0 2px 12px rgba(0,0,0,0.05)" }}>
+                <div style={{ fontSize:12, color:"#2F7D5C", fontWeight:700, letterSpacing:"1px", textTransform:"uppercase", marginBottom:8 }}>Company</div>
+                <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:28, margin:"0 0 8px", color:"#123623" }}>{COMPANY_NAME}</h2>
+                <p style={{ margin:0, fontSize:14, lineHeight:1.6, color:"#4C6155" }}>
+                  Building AI-powered tools that help Canadian artists and producers discover grants, track deadlines, and apply with confidence.
+                </p>
+                <a href={COMPANY_WEBSITE} target="_blank" rel="noopener noreferrer" style={{ display:"inline-block", marginTop:14, color:"#1A5FA8", fontWeight:600, fontSize:14, textDecoration:"none" }}>
+                  Visit Company Website {"\u2197"}
+                </a>
+              </section>
+              <section style={{ background:"#fff", borderRadius:14, padding:"20px 22px", border:"1px solid #D9E3F8", boxShadow:"0 2px 12px rgba(0,0,0,0.05)" }}>
+                <div style={{ fontSize:12, color:"#1A5FA8", fontWeight:700, letterSpacing:"1px", textTransform:"uppercase", marginBottom:10 }}>Social Media</div>
+                <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                  {SOCIAL_LINKS.map((link) => (
+                    <a key={link.label} href={link.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration:"none", background:"#F4F8FF", border:"1px solid #D9E3F8", borderRadius:10, padding:"10px 12px", color:"#1A436F", fontSize:14, fontWeight:600 }}>
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
+              </section>
+            </div>
+            <section style={{ marginTop:18, background:"#F6FBF7", border:"1px solid #D8EADB", borderRadius:12, padding:"14px 16px" }}>
+              <div style={{ fontSize:12, color:"#2F7D5C", fontWeight:700, letterSpacing:"1px", textTransform:"uppercase", marginBottom:6 }}>Theme direction ideas</div>
+              <ul style={{ margin:"0 0 0 18px", padding:0, color:"#3E5E4D", fontSize:14, lineHeight:1.6 }}>
+                <li><strong>White + Mint + Slate:</strong> #F9FFFC, #CFEEDD, #335B4C for a calm and trustworthy look.</li>
+                <li><strong>White + Sky Blue + Forest:</strong> #F8FBFF, #DCEBFF, #23624A for clarity with stronger CTAs.</li>
+                <li><strong>Soft Green + Off-White + Navy:</strong> #EAF6F0, #FFFDF8, #1A4E78 for better legibility in forms.</li>
+              </ul>
+            </section>
+          </div>
+        )}
       </div>
 
       <footer style={{ borderTop:"1px solid #E8E0D0", padding:"24px 40px", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:16, marginTop:40, background:"#fff" }}>
         <CanGrantsLogoImg size="md" />
         <div style={{ textAlign:"right", fontSize:12, color:"#888" }}>
           <div style={{ color:"#C8A84B", fontWeight:600, fontSize:14, fontFamily:"'Cormorant Garamond',serif" }}>CanGrants</div>
-          <div>{"\u00A9"} 2026 BetterHalf Films {"\u00b7"} Toronto, Canada {"\u00b7"} betterhalffilms.com</div>
+          <div>{"\u00A9"} 2026 {COMPANY_NAME} {"\u00b7"} Toronto, Canada {"\u00b7"} betterhalflabs.com</div>
           <div style={{ marginTop:3 }}>A platform for Canadian artists & producers</div>
         </div>
       </footer>
