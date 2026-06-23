@@ -36,7 +36,7 @@ test('shows BetterHalf Labs contact links from the Contact tab', async () => {
 
   await user.click(screen.getByRole('button', { name: /^contact$/i }));
 
-  expect(screen.getByText(/BetterHalf Labs/i)).toBeInTheDocument();
+  expect(screen.getByText('Company: BetterHalf Labs')).toBeInTheDocument();
   expect(screen.getByRole('link', { name: /Instagram/i })).toHaveAttribute(
     'href',
     'https://www.instagram.com/betterhalflabs/',

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import canGrantsLogo from "../assets/logo.svg";
+import { CONTACT } from "./data/contact";
 
 const CA_PROVINCES = [
   "Alberta","British Columbia","Manitoba","New Brunswick",
@@ -326,7 +327,7 @@ function LandingPage({ onAuth }: { onAuth: (user: UserInfo) => void }) {
         <CanGrantsLogoImg size="sm"/>
         <div style={{ fontSize:12, color:"#444", textAlign:"right" }}>
           <div style={{ color:"#C8A84B", fontWeight:600, fontSize:13 }}>CanGrants</div>
-          <div>{"\u00A9"} 2026 BetterHalf Films {"\u00b7"} Toronto, Canada {"\u00b7"} betterhalffilms.com</div>
+          <div>{"\u00A9"} 2026 BetterHalf Labs {"\u00b7"} Toronto, Canada {"\u00b7"} canadianartgrants.com</div>
           <div style={{ marginTop:3 }}>Proudly built for Canadian artists & producers</div>
         </div>
       </div>
@@ -432,8 +433,8 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
         </div>
         <div style={{ display:"flex", gap:4, alignItems:"center" }}>
           <nav style={{ display:"flex", gap:3 }}>
-            {[{id:"discover",label:"Discover"},{id:"saved",label:`Saved (${saved.size})`},{id:"applications",label:"My Applications"},{id:"assistant",label:"AI Assistant"}].map(tab => (
-              <button key={tab.id} onClick={()=>setActiveTab(tab.id)} style={{ background:activeTab===tab.id?"#C8A84B":"transparent", color:activeTab===tab.id?"#0B2215":"#A8C5A0", border:"none", borderRadius:6, padding:"7px 13px", fontSize:12, fontWeight:500, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>{tab.label}</button>
+            {[{id:"discover",label:"Discover"},{id:"saved",label:`Saved (${saved.size})`},{id:"applications",label:"My Applications"},{id:"assistant",label:"AI Assistant"},{id:"contact",label:"Contact"}].map(tab => (
+              <button key={tab.id} onClick={()=>setActiveTab(tab.id)} style={{ background:activeTab===tab.id?"#C8A84B":"transparent", color:activeTab===tab.id?"#0B2215":"#CFE0C8", border:"none", borderRadius:6, padding:"8px 13px", fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>{tab.label}</button>
             ))}
           </nav>
           <div style={{ width:1, height:24, background:"rgba(200,168,75,0.2)", margin:"0 8px" }}/>
@@ -620,13 +621,30 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
             <p style={{ textAlign:"center", fontSize:12, color:"#aaa", marginTop:12 }}>Powered by Gemini AI \u00b7 Tailored for Canadian artists & producers</p>
           </div>
         )}
+
+        {activeTab==="contact" && (
+          <div style={{ maxWidth:760, margin:"0 auto" }}>
+            <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:700, marginBottom:6, color:"#0B2215" }}>Contact</h1>
+            <p style={{ color:"#5A6B5A", fontSize:14, margin:"0 0 20px" }}>{CONTACT.companyLine}</p>
+            <div style={{ background:"#fff", borderRadius:16, border:"1px solid #E8E0D0", boxShadow:"0 2px 20px rgba(0,0,0,0.06)", padding:"24px 26px" }}>
+              <div style={{ fontSize:12, fontWeight:600, color:"#C8A84B", letterSpacing:"1px", textTransform:"uppercase", marginBottom:8 }}>Location</div>
+              <p style={{ margin:"0 0 22px", fontSize:14, color:"#3A3A2A", lineHeight:1.7 }}>{CONTACT.location}</p>
+              <div style={{ fontSize:12, fontWeight:600, color:"#C8A84B", letterSpacing:"1px", textTransform:"uppercase", marginBottom:10 }}>Social Links</div>
+              <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+                {CONTACT.socialLinks.map(link => (
+                  <a key={link.href} href={link.href} target="_blank" rel="noopener noreferrer" style={{ padding:"10px 16px", borderRadius:10, border:"1.5px solid #D5CBB8", background:"#FAFAF7", color:"#0B2215", fontSize:14, fontWeight:600, textDecoration:"none", fontFamily:"'DM Sans',sans-serif" }}>{link.label}</a>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <footer style={{ borderTop:"1px solid #E8E0D0", padding:"24px 40px", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:16, marginTop:40, background:"#fff" }}>
         <CanGrantsLogoImg size="md" />
         <div style={{ textAlign:"right", fontSize:12, color:"#888" }}>
           <div style={{ color:"#C8A84B", fontWeight:600, fontSize:14, fontFamily:"'Cormorant Garamond',serif" }}>CanGrants</div>
-          <div>{"\u00A9"} 2026 BetterHalf Films {"\u00b7"} Toronto, Canada {"\u00b7"} betterhalffilms.com</div>
+          <div>{"\u00A9"} 2026 BetterHalf Labs {"\u00b7"} Toronto, Canada {"\u00b7"} canadianartgrants.com</div>
           <div style={{ marginTop:3 }}>A platform for Canadian artists & producers</div>
         </div>
       </footer>
