@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { generateChatReply } from "./chat.js";
+import { sanitizeChatRequest } from "./chatRequest.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.API_PORT || 3001);
@@ -16,17 +17,14 @@ app.get("/api/health", (_req, res) => {
 
 app.post("/api/chat", async (req, res) => {
   try {
-    const { messages, userName, userProvince, userDiscipline } = req.body ?? {};
-    if (!Array.isArray(messages)) {
-      res.status(400).json({ error: "messages array required" });
+    const sanitized = sanitizeChatRequest(req.body ?? {});
+    if (sanitized.ok === false) {
+      res.status(400).json({ error: sanitized.error });
       return;
     }
 
-    const content = await generateChatReply(messages, {
-      userName: userName || "Artist",
-      userProvince: userProvince || "Canada",
-      userDiscipline: userDiscipline || "",
-    });
+    const { messages, context } = sanitized.value;
+    const content = await generateChatReply(messages, context);
 
     res.json({ content });
   } catch (err) {
