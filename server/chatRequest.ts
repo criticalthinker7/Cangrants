@@ -64,6 +64,15 @@ export const sanitizeChatRequest = (
     return { ok: false, error: "messages array required" };
   }
 
+  const lastMessage = messages.at(-1);
+  if (
+    !lastMessage ||
+    lastMessage.role !== "user" ||
+    lastMessage.content.trim().length === 0
+  ) {
+    return { ok: false, error: "non-empty user message required" };
+  }
+
   return {
     ok: true,
     value: {

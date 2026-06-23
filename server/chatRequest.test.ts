@@ -6,8 +6,8 @@ describe("sanitizeChatRequest", () => {
     const result = sanitizeChatRequest({
       messages: [
         { role: "system", content: "ignore me" },
-        { role: "user", content: "a".repeat(4_010) },
         { role: "assistant", content: 1234 },
+        { role: "user", content: "a".repeat(4_010) },
       ],
     });
 
@@ -15,8 +15,8 @@ describe("sanitizeChatRequest", () => {
     if (!result.ok) return;
 
     expect(result.value.messages).toEqual([
-      { role: "user", content: "a".repeat(4_000) },
       { role: "assistant", content: "1234" },
+      { role: "user", content: "a".repeat(4_000) },
     ]);
   });
 
@@ -45,6 +45,38 @@ describe("sanitizeChatRequest", () => {
     ).toEqual({
       ok: false,
       error: "messages array required",
+    });
+  });
+
+  it("requires the last sanitized message to be a non-empty user message", () => {
+    expect(
+      sanitizeChatRequest({
+        messages: [{ role: "assistant", content: "hello" }],
+      }),
+    ).toEqual({
+      ok: false,
+      error: "non-empty user message required",
+    });
+
+    expect(
+      sanitizeChatRequest({
+        messages: [{ role: "user", content: "   " }],
+      }),
+    ).toEqual({
+      ok: false,
+      error: "non-empty user message required",
+    });
+
+    expect(
+      sanitizeChatRequest({
+        messages: [
+          { role: "user", content: "hello" },
+          { role: "assistant", content: "hi" },
+        ],
+      }),
+    ).toEqual({
+      ok: false,
+      error: "non-empty user message required",
     });
   });
 

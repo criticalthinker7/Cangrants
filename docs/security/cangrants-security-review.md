@@ -5,7 +5,7 @@
 - Demo localStorage auth stores emails and passwords on the client.
 - Saved grants and applications are device-local and editable by anyone with browser storage access.
 - There is no server-side identity, session management, or password hashing.
-- The chat route needs request limits to reduce abuse and oversized payload risk.
+- The chat route still needs rate limiting and bot protection to reduce automated abuse.
 - Prior Vite config exposed the Gemini key into the client build.
 - `npm install` and the baseline dependency audit reported dependency audit vulnerabilities. These should be triaged separately; do not run `npm audit fix` as part of this task.
 

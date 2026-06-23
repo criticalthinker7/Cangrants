@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import canGrantsLogo from "../assets/logo.svg";
+import { windowChatMessages, type ChatPayloadMessage } from "./chatPayload";
 import { CONTACT } from "./data/contact";
 import { ALL_DISCIPLINES, ALL_TAGS, GRANTS, GRANTS_DATASET, type Grant } from "./data/grants";
 
@@ -307,7 +308,7 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
   useEffect(() => { localStorage.setItem("cg_saved", JSON.stringify([...saved])); }, [saved]);
   useEffect(() => { localStorage.setItem("cg_applications", JSON.stringify(applications)); }, [applications]);
   const [selectedGrant, setSelectedGrant] = useState<Grant | null>(null);
-  const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([
+  const [messages, setMessages] = useState<ChatPayloadMessage[]>([
     { role:"assistant", content:`Welcome back, ${user.name}!\n\nI'm your CanGrants AI assistant. I can help you find the right grants, check your eligibility, and draft compelling proposals. What would you like to work on today?` }
   ]);
   const [input, setInput] = useState("");
@@ -337,21 +338,23 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
 
   const sendMessage = async () => {
     if (!input.trim()||loading) return;
-    const userMsg = {role:"user" as "user", content:input};
+    const userMsg: ChatPayloadMessage = {role:"user", content:input};
     setMessages(p=>[...p,userMsg]); setInput(""); setLoading(true);
     try {
+      const payloadMessages = windowChatMessages([...messages,userMsg]);
       const res = await fetch("/api/chat", {
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body: JSON.stringify({
-          messages:[...messages,userMsg].map(m=>({role:m.role,content:m.content})),
+          messages:payloadMessages,
           userName: user.name,
           userProvince: user.province || "Canada",
           userDiscipline: user.discipline || "",
         })
       });
       const data = await res.json();
-      setMessages(p=>[...p,{role:"assistant",content:data.content||"Sorry, try again."}]);
+      const content = res.ok ? data.content : undefined;
+      setMessages(p=>[...p,{role:"assistant",content:content||"Sorry, try again."}]);
     } catch { setMessages(p=>[...p,{role:"assistant",content:"Connection error. Please try again."}]); }
     setLoading(false);
   };
