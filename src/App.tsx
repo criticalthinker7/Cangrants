@@ -99,7 +99,7 @@ interface UserInfo {
 function CanGrantsLogoImg({ size = "md" }: { size?: "lg" | "md" | "sm" }) {
   const dim = size === "lg" ? 80 : size === "sm" ? 40 : 55;
   return (
-    <img src={canGrantsLogo} alt="CanGrants powered by BetterHalf Films" style={{ width:dim, height:dim, borderRadius:"50%", objectFit:"cover" }} />
+    <img src={canGrantsLogo} alt="CanGrants powered by BetterHalf Labs" style={{ width:dim, height:dim, borderRadius:"50%", objectFit:"cover" }} />
   );
 }
 
@@ -627,9 +627,9 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
             <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:700, marginBottom:6, color:"#0B2215" }}>Contact</h1>
             <p style={{ color:"#5A6B5A", fontSize:14, margin:"0 0 20px" }}>{CONTACT.companyLine}</p>
             <div style={{ background:"#fff", borderRadius:16, border:"1px solid #E8E0D0", boxShadow:"0 2px 20px rgba(0,0,0,0.06)", padding:"24px 26px" }}>
-              <div style={{ fontSize:12, fontWeight:600, color:"#C8A84B", letterSpacing:"1px", textTransform:"uppercase", marginBottom:8 }}>Location</div>
+              <div style={{ fontSize:12, fontWeight:600, color:"#2A5C2A", letterSpacing:"1px", textTransform:"uppercase", marginBottom:8 }}>Location</div>
               <p style={{ margin:"0 0 22px", fontSize:14, color:"#3A3A2A", lineHeight:1.7 }}>{CONTACT.location}</p>
-              <div style={{ fontSize:12, fontWeight:600, color:"#C8A84B", letterSpacing:"1px", textTransform:"uppercase", marginBottom:10 }}>Social Links</div>
+              <div style={{ fontSize:12, fontWeight:600, color:"#2A5C2A", letterSpacing:"1px", textTransform:"uppercase", marginBottom:10 }}>Social Links</div>
               <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
                 {CONTACT.socialLinks.map(link => (
                   <a key={link.href} href={link.href} target="_blank" rel="noopener noreferrer" style={{ padding:"10px 16px", borderRadius:10, border:"1.5px solid #D5CBB8", background:"#FAFAF7", color:"#0B2215", fontSize:14, fontWeight:600, textDecoration:"none", fontFamily:"'DM Sans',sans-serif" }}>{link.label}</a>
