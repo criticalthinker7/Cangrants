@@ -14,10 +14,11 @@ Live demo: https://cangrants-betterhalf.vercel.app/
 
 1. Install dependencies: `npm install`
 2. Copy `.env.example` to `.env` and set `GEMINI_API_KEY` (optional — without it, the assistant uses built-in guidance)
-3. Start the app: `npm run dev`
-4. Open http://localhost:3000
+3. Add Supabase values to `.env` for magic-link and Google sign-in. See [SUPABASE_SETUP.md](SUPABASE_SETUP.md).
+4. Start the app: `npm run dev`
+5. Open http://localhost:3000
 
-**Demo login:** `demo@betterhalffilms.com` / `demo123`
+**Demo login:** available only when Supabase environment variables are not configured: `demo@betterhalffilms.com` / `demo123`
 
 ## Scripts
 
