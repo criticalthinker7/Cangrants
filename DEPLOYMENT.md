@@ -1,29 +1,40 @@
 # Deployment Guide
 
-CanGrants should bootstrap on a managed static platform with server-side API execution for integrations.
+CanGrants should bootstrap on a managed static platform for the UI, with server-side API execution added for integrations.
 
 Recommended bootstrap targets:
 
-- **Vercel** for the fastest preview and production workflow.
-- **Cloudflare Pages** if the project stays Cloudflare-first.
+- **Vercel** for the fastest static UI preview and production workflow.
+- **Cloudflare Pages** if the project stays Cloudflare-first for static hosting.
 
-Keep AI and payment calls on server routes, serverless functions, or Workers. Do not call Gemini or Stripe directly from browser code.
+The current repository has a Vite static build plus an Express server in `server/index.ts` that calls `app.listen`. A default Vercel or Cloudflare Pages static deployment can serve the UI, but it will not automatically run the Express `/api/chat` route. To enable chat in a hosted environment, either adapt `/api/chat` to the platform's serverless/Worker API model or host the Express server separately.
 
-## Required environment variables
+Keep AI and payment calls on server routes, serverless functions, separately hosted servers, or Workers. Do not call Gemini or Stripe directly from browser code.
 
-Configure these variables in the hosting provider dashboard before deploying:
+## Environment variables
+
+Configure environment variables in the hosting provider dashboard for the runtime that uses them.
+
+### Current AI configuration
 
 | Variable | Scope | Notes |
 |----------|-------|-------|
-| `GEMINI_API_KEY` | Server-only | Used by AI chat/discovery routes. |
-| `STRIPE_SECRET_KEY` | Server-only | Used to create hosted Stripe Checkout sessions and server-side billing calls. |
-| `STRIPE_WEBHOOK_SECRET` | Server-only | Used to verify Stripe webhook signatures. |
+| `GEMINI_API_KEY` | Server-only | Optional for local/static fallback behavior; required only for Gemini-backed AI responses on the server runtime that handles `/api/chat`. |
+
+### Future payments configuration
+
+These variables are conditional and only needed after Stripe payments are implemented server-side:
+
+| Variable | Scope | Notes |
+|----------|-------|-------|
+| `STRIPE_SECRET_KEY` | Server-only | Future use for creating hosted Stripe Checkout sessions and server-side billing calls. |
+| `STRIPE_WEBHOOK_SECRET` | Server-only | Future use for verifying Stripe webhook signatures. |
 
 Do not expose server secrets with `VITE_` prefixes or other public-client environment variable mechanisms.
 
-## Vercel preview deployment
+## Vercel static UI preview deployment
 
-Use Vercel previews for branch and pull-request validation.
+Use Vercel previews for branch and pull-request validation of the static UI.
 
 ```bash
 npm install
@@ -32,11 +43,13 @@ npm run build
 vercel
 ```
 
-If the project is not linked yet, follow the Vercel CLI prompts or run `vercel link` first. Add preview environment variables in Vercel Project Settings or with the Vercel CLI before testing routes that need Gemini or Stripe.
+If the project is not linked yet, follow the Vercel CLI prompts or run `vercel link` first. This deploy path serves the Vite UI; it does not make the current Express `/api/chat` route available as a Vercel Function.
 
-## Vercel production deployment
+Before Gemini-backed chat works on Vercel, adapt the Express route to a Vercel serverless function/API route or point the UI at a separately hosted Express server. Configure `GEMINI_API_KEY` in the server runtime that handles chat.
 
-After preview validation, deploy production from the intended release branch:
+## Vercel static UI production deployment
+
+After preview validation, deploy the static UI to production from the intended release branch:
 
 ```bash
 npm install
@@ -45,18 +58,27 @@ npm run build
 vercel --prod
 ```
 
-Production must have the required server-only environment variables configured for the Production environment. Keep Stripe webhook endpoints pointed at the production deployment URL and use the matching `STRIPE_WEBHOOK_SECRET`.
+Production chat and payment endpoints need their own server-side deployment path. Do not point Stripe webhook endpoints at a Vercel static UI deployment unless webhook handling has been implemented as a Vercel Function or another reachable server endpoint.
 
 ## Cloudflare Pages and Workers
 
-For a Cloudflare-first deployment:
+For a Cloudflare-first static UI deployment:
 
-1. Build the Vite app with `npm run build`.
-2. Deploy the generated `dist/` output to Cloudflare Pages.
-3. Route server-side AI, Stripe Checkout, and Stripe webhook logic through Cloudflare Workers.
-4. If the Cloudflare-first decision remains, use D1 for Cloudflare-hosted persistence.
+```bash
+npm install
+npm run build
+npx wrangler pages deploy dist --project-name cangrants
+```
 
-Store `GEMINI_API_KEY`, `STRIPE_SECRET_KEY`, and `STRIPE_WEBHOOK_SECRET` as Worker secrets. Pages should serve the static UI; Workers should own privileged server operations.
+This deploys the current Vite UI to Pages. Workers/API implementation is still pending before Gemini-backed AI chat, Stripe Checkout, or Stripe webhooks work on Cloudflare.
+
+If the Cloudflare-first decision remains:
+
+1. Route server-side AI, Stripe Checkout, and Stripe webhook logic through Cloudflare Workers.
+2. Store `GEMINI_API_KEY` and future Stripe secrets as Worker secrets.
+3. Use D1 for Cloudflare-hosted persistence if the app needs Cloudflare-native storage.
+
+Pages should serve the static UI; Workers should own privileged server operations.
 
 ## Security notes
 
