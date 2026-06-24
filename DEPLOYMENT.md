@@ -1,69 +1,66 @@
-# Deployment Guide: Hostinger & GitHub
+# Deployment Guide
 
-This guide explains how to move your **CanGrants** app from AI Studio to your own Hostinger hosting and how to resolve GitHub authorization issues.
+CanGrants should bootstrap on a managed static platform with server-side API execution for integrations.
 
----
+Recommended bootstrap targets:
 
-## 1. Deploying to Hostinger (Shared Hosting)
+- **Vercel** for the fastest preview and production workflow.
+- **Cloudflare Pages** if the project stays Cloudflare-first.
 
-Since your app is a React Single Page Application (SPA), follow these steps to host it on Hostinger:
+Keep AI and payment calls on server routes, serverless functions, or Workers. Do not call Gemini or Stripe directly from browser code.
 
-### Step A: Build the Project
-1. In the AI Studio terminal (or locally if you download the code), run:
-   ```bash
-   npm run build
-   ```
-2. This creates a `dist/` folder containing all your production-ready files.
+## Required environment variables
 
-### Step B: Upload to Hostinger
-1. Log in to your **Hostinger hPanel**.
-2. Go to **Files** -> **File Manager**.
-3. Navigate to the `public_html` folder (or your subfolder).
-4. Upload the **contents** of the `dist/` folder directly into `public_html`.
-5. **Crucial:** Ensure the `.htaccess` file (provided in this project) is also uploaded to the same folder. This file ensures that when you refresh the page, Hostinger knows to send the request back to `index.html` instead of showing a 404 error.
+Configure these variables in the hosting provider dashboard before deploying:
 
-### Note on Subdirectories
-If you are hosting the app in a subfolder (e.g., `yourdomain.com/cangrants/`), you must update the `base` property in `vite.config.ts` to `base: '/cangrants/'` before running `npm run build`.
+| Variable | Scope | Notes |
+|----------|-------|-------|
+| `GEMINI_API_KEY` | Server-only | Used by AI chat/discovery routes. |
+| `STRIPE_SECRET_KEY` | Server-only | Used to create hosted Stripe Checkout sessions and server-side billing calls. |
+| `STRIPE_WEBHOOK_SECRET` | Server-only | Used to verify Stripe webhook signatures. |
 
-### Step C: API Key Security Warning
-On Hostinger Shared Hosting, your `GEMINI_API_KEY` will be bundled into the JavaScript files. 
-*   **For a private portfolio/demo:** This is usually fine.
-*   **For a public high-traffic site:** Anyone can find your key in the browser's "Network" tab. To prevent this, you would need a VPS or a backend proxy (Node.js/PHP).
+Do not expose server secrets with `VITE_` prefixes or other public-client environment variable mechanisms.
 
----
+## Vercel preview deployment
 
-## 2. Linking to GitHub (Detailed Instructions)
+Use Vercel previews for branch and pull-request validation.
 
-If you are having trouble with authorization, follow these exact steps:
+```bash
+npm install
+npm run lint
+npm run build
+vercel
+```
 
-### Step 1: Access the Export Menu
-1. In the bottom-left corner of the AI Studio interface, click the **Settings** (gear icon).
-2. Select **Export to GitHub**.
+If the project is not linked yet, follow the Vercel CLI prompts or run `vercel link` first. Add preview environment variables in Vercel Project Settings or with the Vercel CLI before testing routes that need Gemini or Stripe.
 
-### Step 2: Handle the Authorization Popup
-1. A new window will attempt to open to GitHub.com.
-2. **Check your browser's address bar:** If you see a "Popup Blocked" icon, click it and select **"Always allow popups from ai.studio"**. This is the most common reason for authorization failure.
-3. Sign in to your GitHub account if prompted.
+## Vercel production deployment
 
-### Step 3: Grant Permissions
-1. GitHub will ask you to authorize **Google AI Studio**.
-2. Click the green **Authorize** button.
-3. If you want to export to an **Organization** repository, make sure to click "Request" or "Grant" next to the organization name on that same screen.
+After preview validation, deploy production from the intended release branch:
 
-### Step 4: Create the Repository
-1. Once authorized, return to AI Studio.
-2. You will see a screen to "Create a new repository".
-3. Enter a name (e.g., `can-grants-app`) and choose **Public** or **Private**.
-4. Click **Export**.
+```bash
+npm install
+npm run lint
+npm run build
+vercel --prod
+```
 
-### Troubleshooting Authorization
-*   **"Permission Denied":** Ensure you are the owner of the GitHub account or have "Write" access to the organization you are trying to export to.
-*   **Stuck Loading:** Refresh the AI Studio page and try again. Sometimes the OAuth token needs a fresh start.
-*   **Wrong Account:** If you are logged into the wrong GitHub account in your browser, log out of GitHub.com first, then try the export again.
+Production must have the required server-only environment variables configured for the Production environment. Keep Stripe webhook endpoints pointed at the production deployment URL and use the matching `STRIPE_WEBHOOK_SECRET`.
 
----
+## Cloudflare Pages and Workers
 
-## 3. Environment Variables
-Once the code is on GitHub or Hostinger, you must manually provide the API key.
-*   **Local Development:** Create a `.env` file and add `VITE_GEMINI_API_KEY=your_key_here`.
-*   **Hostinger:** Since it's a static build, Vite reads the key during `npm run build`. Make sure the environment variable is set in your build environment.
+For a Cloudflare-first deployment:
+
+1. Build the Vite app with `npm run build`.
+2. Deploy the generated `dist/` output to Cloudflare Pages.
+3. Route server-side AI, Stripe Checkout, and Stripe webhook logic through Cloudflare Workers.
+4. If the Cloudflare-first decision remains, use D1 for Cloudflare-hosted persistence.
+
+Store `GEMINI_API_KEY`, `STRIPE_SECRET_KEY`, and `STRIPE_WEBHOOK_SECRET` as Worker secrets. Pages should serve the static UI; Workers should own privileged server operations.
+
+## Security notes
+
+- Never put server secrets in Vite public variables or browser bundles.
+- Do not use real passwords in localStorage. The current local sign-in is demo-only until server-side auth is implemented.
+- Use hosted Stripe Checkout instead of collecting card details in the app.
+- Add bot protection and rate limiting before opening public AI-powered routes.

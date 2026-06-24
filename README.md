@@ -1,12 +1,9 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
-
 # CanGrants
 
-AI-powered grant discovery and tracking for Canadian artists and producers — built by BetterHalf Films.
+AI-powered grant discovery and tracking for Canadian artists and producers, built by BetterHalf Labs.
 
-Live demo: https://cangrants-betterhalf.vercel.app/
+Live site: https://canadianartgrants.com/
+Preview/demo: https://cangrants-betterhalf.vercel.app/
 
 ## Run locally
 
@@ -17,7 +14,11 @@ Live demo: https://cangrants-betterhalf.vercel.app/
 3. Start the app: `npm run dev`
 4. Open http://localhost:3000
 
-**Demo login:** `demo@betterhalffilms.com` / `demo123`
+**Demo login for local testing only:** `demo@betterhalffilms.com` / `demo123`
+
+## Security status
+
+The current sign-in flow is demo-only and stores test users in browser localStorage. Do not use it for real user accounts until server-side auth is implemented.
 
 ## Scripts
 
