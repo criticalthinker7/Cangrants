@@ -69,6 +69,11 @@ test('shows BetterHalf Labs contact links from the Contact tab', async () => {
   );
 });
 
+it('shows the Contact navigation item after signing in', async () => {
+  await signIn();
+  expect(screen.getByRole('button', { name: /contact/i })).toBeVisible();
+});
+
 it('shows a current dataset label on the Discover page', async () => {
   await signIn();
   expect(screen.getByText(/Updated 2026/i)).toBeInTheDocument();

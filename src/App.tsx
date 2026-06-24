@@ -3,6 +3,7 @@ import canGrantsLogo from "../assets/logo.svg";
 import { windowChatMessages, type ChatPayloadMessage } from "./chatPayload";
 import { CONTACT } from "./data/contact";
 import { ALL_DISCIPLINES, ALL_TAGS, GRANTS, GRANTS_DATASET, type Grant } from "./data/grants";
+import { theme } from "./theme";
 
 const CA_PROVINCES = [
   "Alberta","British Columbia","Manitoba","New Brunswick",
@@ -365,24 +366,24 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
   const statusBg: Record<string,string> = {"Not Started":"#FEF3C7","In Progress":"#DBEAFE","Submitted":"#D1FAE5"};
 
   return (
-    <div style={{ fontFamily:"'DM Sans',sans-serif", background:"#F4EFE6", minHeight:"100vh", color:"#1A1208" }}>
+    <div style={{ fontFamily:"'DM Sans',sans-serif", background:theme.colors.background, minHeight:"100vh", color:theme.colors.text }}>
       <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=Barlow:wght@700;800&display=swap" rel="stylesheet"/>
 
-      <header style={{ background:"#0B2215", color:"#F4EFE6", padding:"0 24px", display:"flex", alignItems:"center", justifyContent:"space-between", height:62, position:"sticky", top:0, zIndex:100, boxShadow:"0 2px 20px rgba(0,0,0,0.3)" }}>
+      <header style={{ background:theme.colors.surface, color:theme.colors.text, padding:"0 24px", display:"flex", alignItems:"center", justifyContent:"space-between", height:62, position:"sticky", top:0, zIndex:100, boxShadow:"0 2px 18px rgba(22,51,37,0.08)", borderBottom:`1px solid ${theme.colors.border}` }}>
         <div style={{ display:"flex", alignItems:"center", gap:18 }}>
           <CanGrantsLogoImg size="sm" />
-          <div style={{ width:1, height:28, background:"rgba(200,168,75,0.3)" }}/>
-          <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:22, fontWeight:700, letterSpacing:"-0.5px", color:"#C8A84B" }}>CanGrants</span>
+          <div style={{ width:1, height:28, background:theme.colors.border }}/>
+          <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:22, fontWeight:700, letterSpacing:"-0.5px", color:theme.colors.primary }}>CanGrants</span>
         </div>
         <div style={{ display:"flex", gap:4, alignItems:"center" }}>
           <nav style={{ display:"flex", gap:3 }}>
             {[{id:"discover",label:"Discover"},{id:"saved",label:`Saved (${saved.size})`},{id:"applications",label:"My Applications"},{id:"assistant",label:"AI Assistant"},{id:"contact",label:"Contact"}].map(tab => (
-              <button key={tab.id} onClick={()=>setActiveTab(tab.id)} style={{ background:activeTab===tab.id?"#C8A84B":"transparent", color:activeTab===tab.id?"#0B2215":"#CFE0C8", border:"none", borderRadius:6, padding:"8px 13px", fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>{tab.label}</button>
+              <button key={tab.id} onClick={()=>setActiveTab(tab.id)} style={{ background:activeTab===tab.id?theme.colors.primary:theme.colors.surfaceMuted, color:activeTab===tab.id?theme.colors.surface:theme.colors.textMuted, border:"none", borderRadius:6, padding:"8px 14px", fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>{tab.label}</button>
             ))}
           </nav>
-          <div style={{ width:1, height:24, background:"rgba(200,168,75,0.2)", margin:"0 8px" }}/>
-          <div style={{ fontSize:12, color:"#6A9C6A", marginRight:8 }}>{user.name.split(" ")[0]}</div>
-          <button onClick={onLogout} style={{ padding:"6px 12px", borderRadius:6, border:"1px solid rgba(200,168,75,0.3)", background:"transparent", color:"#C8A84B", fontSize:11, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>Sign Out</button>
+          <div style={{ width:1, height:24, background:theme.colors.border, margin:"0 8px" }}/>
+          <div style={{ fontSize:12, color:theme.colors.textMuted, marginRight:8 }}>{user.name.split(" ")[0]}</div>
+          <button onClick={onLogout} style={{ padding:"6px 12px", borderRadius:6, border:`1px solid ${theme.colors.border}`, background:"transparent", color:theme.colors.primary, fontSize:11, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>Sign Out</button>
         </div>
       </header>
 
@@ -392,37 +393,37 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
           <div>
             <div style={{ marginBottom:28, display:"flex", gap:16, flexWrap:"wrap", alignItems:"center", justifyContent:"space-between" }}>
               <div>
-                <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:700, margin:"0 0 4px", color:"#0B2215" }}>Grant Discovery</h1>
-                <p style={{ margin:0, color:"#5A6B5A", fontSize:14 }}>{GRANTS.length} opportunities \u00b7 Canadian &amp; International \u00b7 {GRANTS_DATASET.label}</p>
+                <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:700, margin:"0 0 4px", color:theme.colors.primaryDark }}>Grant Discovery</h1>
+                <p style={{ margin:0, color:theme.colors.textMuted, fontSize:14 }}>{GRANTS.length} opportunities \u00b7 Canadian &amp; International \u00b7 {GRANTS_DATASET.label}</p>
               </div>
               <div style={{ display:"flex", gap:12 }}>
-                {[{label:"Total",value:GRANTS.length,color:"#C8A84B"},{label:"Canadian",value:GRANTS.filter(g=>g.location==="Canada").length,color:"#2D7D46"},{label:"International",value:GRANTS.filter(g=>g.location==="International").length,color:"#1A5FA8"}].map(s=>(
-                  <div key={s.label} style={{ background:"#fff", borderRadius:10, padding:"12px 20px", textAlign:"center", boxShadow:"0 1px 6px rgba(0,0,0,0.07)", minWidth:80 }}>
+                {[{label:"Total",value:GRANTS.length,color:theme.colors.primary},{label:"Canadian",value:GRANTS.filter(g=>g.location==="Canada").length,color:theme.colors.primary},{label:"International",value:GRANTS.filter(g=>g.location==="International").length,color:theme.colors.accentBlue}].map(s=>(
+                  <div key={s.label} style={{ background:theme.colors.surface, border:`1px solid ${theme.colors.border}`, borderRadius:10, padding:"12px 20px", textAlign:"center", boxShadow:"0 1px 6px rgba(22,51,37,0.06)", minWidth:80 }}>
                     <div style={{ fontSize:22, fontWeight:700, fontFamily:"'Cormorant Garamond',serif", color:s.color }}>{s.value}</div>
-                    <div style={{ fontSize:11, color:"#888" }}>{s.label}</div>
+                    <div style={{ fontSize:11, color:theme.colors.textMuted }}>{s.label}</div>
                   </div>
                 ))}
               </div>
             </div>
-            <div style={{ background:"#fff", borderRadius:14, padding:20, marginBottom:24, boxShadow:"0 2px 12px rgba(0,0,0,0.06)", border:"1px solid #E8E0D0" }}>
-              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search grants, organizations, disciplines, tags..." style={{ width:"100%", padding:"12px 16px", borderRadius:8, border:"1.5px solid #D5CBB8", fontSize:14, fontFamily:"'DM Sans',sans-serif", background:"#FAFAF7", outline:"none", boxSizing:"border-box", marginBottom:14, color:"#1A1208" }}/>
+            <div style={{ background:theme.colors.surface, borderRadius:14, padding:20, marginBottom:24, boxShadow:"0 2px 12px rgba(22,51,37,0.06)", border:`1px solid ${theme.colors.border}` }}>
+              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search grants, organizations, disciplines, tags..." style={{ width:"100%", padding:"12px 16px", borderRadius:8, border:`1.5px solid ${theme.colors.border}`, fontSize:14, fontFamily:"'DM Sans',sans-serif", background:theme.colors.background, outline:"none", boxSizing:"border-box", marginBottom:14, color:theme.colors.text }}/>
               <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
                 {[{key:"discipline",label:"Discipline",opts:ALL_DISCIPLINES},{key:"location",label:"Location",opts:["Canada","International"]},{key:"deadline",label:"Deadline",opts:[["urgent","Urgent (\u226414 days)"],["month","This Month"],["rolling","Rolling"]]},{key:"tag",label:"For\u2026",opts:ALL_TAGS}].map(({key,label,opts})=>(
-                  <select key={key} value={filters[key as keyof typeof filters]} onChange={e=>setFilters(p=>({...p,[key]:e.target.value}))} style={{ padding:"8px 12px", borderRadius:8, border:"1.5px solid #D5CBB8", fontSize:13, background:"#fff", fontFamily:"'DM Sans',sans-serif", color:"#1A1208", cursor:"pointer" }}>
+                  <select key={key} value={filters[key as keyof typeof filters]} onChange={e=>setFilters(p=>({...p,[key]:e.target.value}))} style={{ padding:"8px 12px", borderRadius:8, border:`1.5px solid ${theme.colors.border}`, fontSize:13, background:theme.colors.surface, fontFamily:"'DM Sans',sans-serif", color:theme.colors.text, cursor:"pointer" }}>
                     <option value="">{label}: All</option>
                     {opts.map(o=>Array.isArray(o)?<option key={o[0]} value={o[0]}>{o[1]}</option>:<option key={o} value={o}>{o}</option>)}
                   </select>
                 ))}
-                {(search||Object.values(filters).some(Boolean))&&<button onClick={()=>{setSearch("");setFilters({discipline:"",location:"",tag:"",deadline:""}); }} style={{ padding:"8px 14px", borderRadius:8, border:"1px solid #E0D5C5", background:"transparent", fontSize:13, cursor:"pointer", color:"#888", fontFamily:"'DM Sans',sans-serif" }}>Clear all</button>}
+                {(search||Object.values(filters).some(Boolean))&&<button onClick={()=>{setSearch("");setFilters({discipline:"",location:"",tag:"",deadline:""}); }} style={{ padding:"8px 14px", borderRadius:8, border:`1px solid ${theme.colors.border}`, background:"transparent", fontSize:13, cursor:"pointer", color:theme.colors.textMuted, fontFamily:"'DM Sans',sans-serif" }}>Clear all</button>}
               </div>
             </div>
-            <p style={{ fontSize:13, color:"#888", marginBottom:16 }}>Showing {filtered.length} of {GRANTS.length} grants</p>
+            <p style={{ fontSize:13, color:theme.colors.textMuted, marginBottom:16 }}>Showing {filtered.length} of {GRANTS.length} grants</p>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(340px,1fr))", gap:18 }}>
               {filtered.map(g=>{
                 const dl=getDeadlineStatus(g.close), isSaved=saved.has(g.id), hasApp=applications.find(a=>a.id===g.id);
                 return (
-                  <div key={g.id} style={{ background:"#fff", borderRadius:14, border:"1px solid #E8E0D0", boxShadow:"0 2px 10px rgba(0,0,0,0.05)", overflow:"hidden", display:"flex", flexDirection:"column" }}>
-                    <div style={{ background:g.location==="Canada"?"#0B2215":"#1A2F5A", padding:"14px 18px", display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+                  <div key={g.id} style={{ background:theme.colors.surface, borderRadius:14, border:`1px solid ${theme.colors.border}`, boxShadow:"0 2px 10px rgba(22,51,37,0.05)", overflow:"hidden", display:"flex", flexDirection:"column" }}>
+                    <div style={{ background:g.location==="Canada"?theme.colors.primaryDark:theme.colors.accentBlue, padding:"14px 18px", display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                       <div style={{ flex:1 }}>
                         <div style={{ fontSize:10, letterSpacing:"1.5px", color:g.location==="Canada"?"#6A9C6A":"#6A8CC8", textTransform:"uppercase", marginBottom:4 }}>{g.location} \u00b7 {g.discipline.slice(0,2).join(", ")}</div>
                         <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:18, fontWeight:700, color:"#F4EFE6", lineHeight:1.2 }}>{g.name}</div>
@@ -440,10 +441,10 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
                         <div style={{ textAlign:"right" }}><div style={{ fontSize:11, color:"#888", marginBottom:1 }}>Amount</div><div style={{ fontSize:13, fontWeight:600, color:"#1A7A3A" }}>{g.amount}</div></div>
                       </div>
                     </div>
-                    <div style={{ padding:"12px 18px", borderTop:"1px solid #F0E8D8", display:"flex", gap:8 }}>
-                      <button onClick={()=>setSelectedGrant(g)} style={{ flex:1, padding:"8px 0", borderRadius:8, border:"1.5px solid #D5CBB8", background:"transparent", fontSize:13, cursor:"pointer", color:"#5A4A2A", fontFamily:"'DM Sans',sans-serif", fontWeight:500 }}>Details</button>
-                      <button onClick={()=>{addApplication(g);setActiveTab("applications");}} style={{ flex:1, padding:"8px 0", borderRadius:8, border:"none", background:hasApp?"#E8F5E8":"#0B2215", color:hasApp?"#1A7A3A":"#C8A84B", fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", fontWeight:500 }}>{hasApp?"\u2713 Tracking":"Track"}</button>
-                      <a href={g.url} target="_blank" rel="noopener noreferrer" style={{ flex:1, padding:"8px 0", borderRadius:8, border:"none", background:"#C8A84B", color:"#0B2215", fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", fontWeight:600, textDecoration:"none", textAlign:"center", lineHeight:"1.8" }}>Apply {"\u2197"}</a>
+                    <div style={{ padding:"12px 18px", borderTop:`1px solid ${theme.colors.border}`, display:"flex", gap:8 }}>
+                      <button onClick={()=>setSelectedGrant(g)} style={{ flex:1, padding:"8px 0", borderRadius:8, border:`1.5px solid ${theme.colors.border}`, background:"transparent", fontSize:13, cursor:"pointer", color:theme.colors.primary, fontFamily:"'DM Sans',sans-serif", fontWeight:500 }}>Details</button>
+                      <button onClick={()=>{addApplication(g);setActiveTab("applications");}} style={{ flex:1, padding:"8px 0", borderRadius:8, border:"none", background:hasApp?theme.colors.secondary:theme.colors.primaryDark, color:hasApp?theme.colors.primary:theme.colors.surface, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", fontWeight:500 }}>{hasApp?"\u2713 Tracking":"Track"}</button>
+                      <a href={g.url} target="_blank" rel="noopener noreferrer" style={{ flex:1, padding:"8px 0", borderRadius:8, border:"none", background:theme.colors.accentBlue, color:theme.colors.surface, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", fontWeight:600, textDecoration:"none", textAlign:"center", lineHeight:"1.8" }}>Apply {"\u2197"}</a>
                     </div>
                   </div>
                 );
@@ -454,8 +455,8 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
 
         {activeTab==="saved" && (
           <div>
-            <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:700, marginBottom:8, color:"#0B2215" }}>Saved Grants</h1>
-            <p style={{ color:"#5A6B5A", fontSize:14, marginBottom:24 }}>{saved.size} grants saved to your list</p>
+            <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:700, marginBottom:8, color:theme.colors.primaryDark }}>Saved Grants</h1>
+            <p style={{ color:theme.colors.textMuted, fontSize:14, marginBottom:24 }}>{saved.size} grants saved to your list</p>
             {savedGrants.length===0?(<div style={{ textAlign:"center", padding:"60px 0", color:"#888" }}><div style={{ fontSize:40, marginBottom:12 }}>\u2606</div><p>No saved grants yet. Star grants in Discover.</p></div>):(
               <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
                 {savedGrants.map(g=>{
@@ -491,8 +492,8 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
 
         {activeTab==="applications" && (
           <div>
-            <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:700, marginBottom:8, color:"#0B2215" }}>My Applications</h1>
-            <p style={{ color:"#5A6B5A", fontSize:14, marginBottom:24 }}>Track your grant applications and their status</p>
+            <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:700, marginBottom:8, color:theme.colors.primaryDark }}>My Applications</h1>
+            <p style={{ color:theme.colors.textMuted, fontSize:14, marginBottom:24 }}>Track your grant applications and their status</p>
             {["Not Started","In Progress","Submitted"].map(status=>{
               const apps=appGrants.filter(a=>a.status===status&&a.grant);
               return (
@@ -532,8 +533,8 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
 
         {activeTab==="assistant" && (
           <div style={{ maxWidth:760, margin:"0 auto" }}>
-            <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:700, marginBottom:6, color:"#0B2215" }}>AI Grant Assistant</h1>
-            <p style={{ color:"#5A6B5A", fontSize:14, margin:"0 0 20px" }}>Ask about eligibility, get grant recommendations, draft proposals and artist statements</p>
+            <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:700, marginBottom:6, color:theme.colors.primaryDark }}>AI Grant Assistant</h1>
+            <p style={{ color:theme.colors.textMuted, fontSize:14, margin:"0 0 20px" }}>Ask about eligibility, get grant recommendations, draft proposals and artist statements</p>
             <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:20 }}>
               {["Which grants am I eligible for as a South Asian diaspora filmmaker in Toronto?","Draft an artist statement for Soso Park for the MAC Matchmaker grant","What are the most urgent upcoming deadlines?","Help me write a project summary for Son of Soil"].map(p=>(
                 <button key={p} onClick={()=>setInput(p)} style={{ padding:"8px 14px", borderRadius:20, border:"1.5px solid #C8A84B", background:"#FEF8EC", color:"#7A5A0A", fontSize:12, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", fontWeight:500 }}>
@@ -567,15 +568,15 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
 
         {activeTab==="contact" && (
           <div style={{ maxWidth:760, margin:"0 auto" }}>
-            <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:700, marginBottom:6, color:"#0B2215" }}>Contact</h1>
-            <p style={{ color:"#5A6B5A", fontSize:14, margin:"0 0 20px" }}>{CONTACT.companyLine}</p>
-            <div style={{ background:"#fff", borderRadius:16, border:"1px solid #E8E0D0", boxShadow:"0 2px 20px rgba(0,0,0,0.06)", padding:"24px 26px" }}>
-              <div style={{ fontSize:12, fontWeight:600, color:"#2A5C2A", letterSpacing:"1px", textTransform:"uppercase", marginBottom:8 }}>Location</div>
-              <p style={{ margin:"0 0 22px", fontSize:14, color:"#3A3A2A", lineHeight:1.7 }}>{CONTACT.location}</p>
-              <div style={{ fontSize:12, fontWeight:600, color:"#2A5C2A", letterSpacing:"1px", textTransform:"uppercase", marginBottom:10 }}>Social Links</div>
+            <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:700, marginBottom:6, color:theme.colors.primaryDark }}>Contact</h1>
+            <p style={{ color:theme.colors.textMuted, fontSize:14, margin:"0 0 20px" }}>{CONTACT.companyLine}</p>
+            <div style={{ background:theme.colors.surface, borderRadius:16, border:`1px solid ${theme.colors.border}`, boxShadow:"0 2px 20px rgba(22,51,37,0.06)", padding:"24px 26px" }}>
+              <div style={{ fontSize:12, fontWeight:600, color:theme.colors.primary, letterSpacing:"1px", textTransform:"uppercase", marginBottom:8 }}>Location</div>
+              <p style={{ margin:"0 0 22px", fontSize:14, color:theme.colors.text, lineHeight:1.7 }}>{CONTACT.location}</p>
+              <div style={{ fontSize:12, fontWeight:600, color:theme.colors.primary, letterSpacing:"1px", textTransform:"uppercase", marginBottom:10 }}>Social Links</div>
               <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
                 {CONTACT.socialLinks.map(link => (
-                  <a key={link.href} href={link.href} target="_blank" rel="noopener noreferrer" style={{ padding:"10px 16px", borderRadius:10, border:"1.5px solid #D5CBB8", background:"#FAFAF7", color:"#0B2215", fontSize:14, fontWeight:600, textDecoration:"none", fontFamily:"'DM Sans',sans-serif" }}>{link.label}</a>
+                  <a key={link.href} href={link.href} target="_blank" rel="noopener noreferrer" style={{ padding:"10px 16px", borderRadius:10, border:`1.5px solid ${theme.colors.border}`, background:theme.colors.surfaceMuted, color:theme.colors.primaryDark, fontSize:14, fontWeight:600, textDecoration:"none", fontFamily:"'DM Sans',sans-serif" }}>{link.label}</a>
                 ))}
               </div>
             </div>
@@ -583,10 +584,10 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
         )}
       </div>
 
-      <footer style={{ borderTop:"1px solid #E8E0D0", padding:"24px 40px", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:16, marginTop:40, background:"#fff" }}>
+      <footer style={{ borderTop:`1px solid ${theme.colors.border}`, padding:"24px 40px", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:16, marginTop:40, background:theme.colors.surface }}>
         <CanGrantsLogoImg size="md" />
-        <div style={{ textAlign:"right", fontSize:12, color:"#888" }}>
-          <div style={{ color:"#C8A84B", fontWeight:600, fontSize:14, fontFamily:"'Cormorant Garamond',serif" }}>CanGrants</div>
+        <div style={{ textAlign:"right", fontSize:12, color:theme.colors.textMuted }}>
+          <div style={{ color:theme.colors.primary, fontWeight:600, fontSize:14, fontFamily:"'Cormorant Garamond',serif" }}>CanGrants</div>
           <div>{"\u00A9"} 2026 BetterHalf Labs {"\u00b7"} Toronto, Canada {"\u00b7"} canadianartgrants.com</div>
           <div style={{ marginTop:3 }}>A platform for Canadian artists & producers</div>
         </div>
