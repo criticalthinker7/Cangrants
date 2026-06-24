@@ -7,6 +7,7 @@ export const theme = {
     primaryDark: '#163325',
     secondary: '#DDEFE4',
     accentBlue: '#2D6CDF',
+    accentBlueDark: '#1A2F5A',
     border: '#D6E6DA',
     text: '#163325',
     textMuted: '#557064',

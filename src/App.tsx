@@ -423,13 +423,13 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
                 const dl=getDeadlineStatus(g.close), isSaved=saved.has(g.id), hasApp=applications.find(a=>a.id===g.id);
                 return (
                   <div key={g.id} style={{ background:theme.colors.surface, borderRadius:14, border:`1px solid ${theme.colors.border}`, boxShadow:"0 2px 10px rgba(22,51,37,0.05)", overflow:"hidden", display:"flex", flexDirection:"column" }}>
-                    <div style={{ background:g.location==="Canada"?theme.colors.primaryDark:theme.colors.accentBlue, padding:"14px 18px", display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+                    <div style={{ background:g.location==="Canada"?theme.colors.primaryDark:theme.colors.accentBlueDark, padding:"14px 18px", display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                       <div style={{ flex:1 }}>
-                        <div style={{ fontSize:10, letterSpacing:"1.5px", color:g.location==="Canada"?"#6A9C6A":"#6A8CC8", textTransform:"uppercase", marginBottom:4 }}>{g.location} \u00b7 {g.discipline.slice(0,2).join(", ")}</div>
+                        <div style={{ fontSize:10, letterSpacing:"1.5px", color:theme.colors.secondary, textTransform:"uppercase", marginBottom:4 }}>{g.location} \u00b7 {g.discipline.slice(0,2).join(", ")}</div>
                         <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:18, fontWeight:700, color:"#F4EFE6", lineHeight:1.2 }}>{g.name}</div>
                         <div style={{ fontSize:12, color:"#A8C5A0", marginTop:3 }}>{g.org}</div>
                       </div>
-                      <button onClick={()=>toggleSave(g.id)} style={{ background:"none", border:"none", cursor:"pointer", fontSize:18, padding:"0 0 0 8px", color:isSaved?"#C8A84B":"#4A6A4A" }}>{isSaved?"\u2605":"\u2606"}</button>
+                      <button onClick={()=>toggleSave(g.id)} style={{ background:"none", border:"none", cursor:"pointer", fontSize:18, padding:"0 0 0 8px", color:isSaved?"#C8A84B":theme.colors.secondary }}>{isSaved?"\u2605":"\u2606"}</button>
                     </div>
                     <div style={{ padding:"14px 18px", flex:1, display:"flex", flexDirection:"column", gap:10 }}>
                       <p style={{ margin:0, fontSize:13, color:"#5A6B5A", lineHeight:1.5 }}>{g.description}</p>

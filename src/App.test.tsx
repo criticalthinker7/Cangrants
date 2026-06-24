@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, test } from 'vitest';
 import App from './App';
@@ -72,6 +72,28 @@ test('shows BetterHalf Labs contact links from the Contact tab', async () => {
 it('shows the Contact navigation item after signing in', async () => {
   await signIn();
   expect(screen.getByRole('button', { name: /contact/i })).toBeVisible();
+});
+
+it('uses a dark header on international grant cards', async () => {
+  const user = await signIn();
+  await user.type(
+    screen.getByPlaceholderText(/Search grants/i),
+    'Sundance Feature Film Program',
+  );
+
+  const title = screen.getByText('Sundance Feature Film Program');
+  const header = title.parentElement?.parentElement;
+
+  expect(header).toHaveStyle({ background: '#1A2F5A' });
+  expect(
+    within(header!).getByText((content) =>
+      content.includes('International') && content.includes('Film'),
+    ),
+  ).toHaveStyle({ color: '#DDEFE4' });
+  expect(within(header!).getByText('Sundance Institute')).toBeVisible();
+  expect(within(header!).getByRole('button', { name: '\u2606' })).toHaveStyle({
+    color: '#DDEFE4',
+  });
 });
 
 it('shows a current dataset label on the Discover page', async () => {
