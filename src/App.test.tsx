@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, test } from 'vitest';
 import App from './App';
-import { GRANTS } from './data/grants';
+import { GRANTS, GRANTS_DATASET } from './data/grants';
 
 const originalGrantDeadlines = GRANTS.map((grant) => ({
   id: grant.id,
@@ -101,6 +101,17 @@ it('shows a current dataset label on the Discover page', async () => {
   expect(screen.getByText(/Updated 2026/i)).toBeInTheDocument();
 });
 
+it('shows the deadline review notice on the Discover page', async () => {
+  await signIn();
+
+  expect(
+    screen.getByText(
+      /Deadline review needed: check each funder site before applying\./i,
+    ),
+  ).toBeVisible();
+  expect(screen.getByText(GRANTS_DATASET.reviewNote)).toBeVisible();
+});
+
 it('shows closed deadline records as Closed', async () => {
   const grant = GRANTS.find(
     (candidate) => candidate.name === 'Sundance Feature Film Program',
@@ -115,6 +126,24 @@ it('shows closed deadline records as Closed', async () => {
   );
 
   expect(screen.getByText('Closed')).toBeInTheDocument();
+});
+
+it('shows closed deadline records as Closed in the Details modal', async () => {
+  const grant = GRANTS.find(
+    (candidate) => candidate.name === 'Sundance Feature Film Program',
+  );
+  expect(grant).toBeDefined();
+  grant!.close = 'Closed';
+
+  const user = await signIn();
+  await user.type(
+    screen.getByPlaceholderText(/Search grants/i),
+    'Sundance Feature Film Program',
+  );
+  await user.click(screen.getByRole('button', { name: /^details$/i }));
+
+  expect(screen.getAllByText('Closed')).toHaveLength(2);
+  expect(screen.queryByText('Invalid Date')).not.toBeInTheDocument();
 });
 
 it('points artists to the funder site when a deadline is not parseable', async () => {

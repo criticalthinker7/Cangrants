@@ -28,6 +28,16 @@ const getDeadlineStatus = (close: string) => {
   if (diff <= 45) return { label: `${diff}d left`, color: '#E67E22', days: diff };
   return { label: `${diff}d left`, color: '#27AE60', days: diff };
 };
+const formatGrantDateForMetadata = (dateValue: string) => {
+  const normalized = dateValue.trim();
+  if (normalized === 'Rolling') return 'Rolling';
+  if (normalized === 'Closed') return 'Closed';
+
+  const parsed = new Date(normalized);
+  if (Number.isNaN(parsed.getTime())) return 'Check funder site';
+
+  return parsed.toLocaleDateString("en-CA", { month:"long", day:"numeric", year:"numeric" });
+};
 const validatePostal = (v: string) => /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(v.trim());
 
 interface UserInfo {
@@ -405,6 +415,10 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
                 ))}
               </div>
             </div>
+            <div role="note" style={{ background:"#FEF8EC", border:"1px solid rgba(200,168,75,0.35)", borderRadius:12, padding:"14px 18px", marginBottom:20, color:"#5A4A2A" }}>
+              <div style={{ fontSize:13, fontWeight:700, color:"#8B6914", marginBottom:4 }}>Deadline review needed: check each funder site before applying.</div>
+              <div style={{ fontSize:12, lineHeight:1.6 }}>{GRANTS_DATASET.reviewNote}</div>
+            </div>
             <div style={{ background:theme.colors.surface, borderRadius:14, padding:20, marginBottom:24, boxShadow:"0 2px 12px rgba(22,51,37,0.06)", border:`1px solid ${theme.colors.border}` }}>
               <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search grants, organizations, disciplines, tags..." style={{ width:"100%", padding:"12px 16px", borderRadius:8, border:`1.5px solid ${theme.colors.border}`, fontSize:14, fontFamily:"'DM Sans',sans-serif", background:theme.colors.background, outline:"none", boxSizing:"border-box", marginBottom:14, color:theme.colors.text }}/>
               <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
@@ -603,7 +617,7 @@ function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => void })
             </div>
             <div style={{ padding:"24px 26px" }}>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:20 }}>
-                {[{label:"Amount",value:selectedGrant.amount},{label:"Deadline",value:selectedGrant.close==="Rolling"?"Rolling":new Date(selectedGrant.close).toLocaleDateString("en-CA",{month:"long",day:"numeric",year:"numeric"})},{label:"Opens",value:new Date(selectedGrant.open).toLocaleDateString("en-CA",{month:"long",day:"numeric",year:"numeric"})},{label:"Location",value:selectedGrant.location}].map(({label,value})=>(
+                {[{label:"Amount",value:selectedGrant.amount},{label:"Deadline",value:formatGrantDateForMetadata(selectedGrant.close)},{label:"Opens",value:formatGrantDateForMetadata(selectedGrant.open)},{label:"Location",value:selectedGrant.location}].map(({label,value})=>(
                   <div key={label} style={{ background:"#F7F2E8", borderRadius:10, padding:"12px 16px" }}>
                     <div style={{ fontSize:11, color:"#888", marginBottom:2 }}>{label}</div>
                     <div style={{ fontSize:15, fontWeight:600, color:"#0B2215" }}>{value}</div>
